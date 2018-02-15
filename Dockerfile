@@ -379,8 +379,9 @@ RUN set -ex; \
 # These steps should only be run once, so can't be in make_iso.sh (which can be run in chained Dockerfiles)
 # see https://github.com/boot2docker/boot2docker/blob/master/doc/BUILD.md
 
-# Install the scstadmin scripts
-RUN DESTDIR="$ROOTFS/" make -C /scst/scstadmin install
+# Install the scstadmin scripts and iSCSI daemon
+RUN DESTDIR="$ROOTFS/" make -C /scst/scstadmin install && \
+    cp /scst/iscsi-scst/usr/iscsi-scstd "$ROOTFS/usr/sbin"
 
 # Make sure init scripts are executable
 RUN find "$ROOTFS/etc/rc.d/" "$ROOTFS/usr/local/etc/init.d/" -type f -exec chmod --changes +x '{}' +
