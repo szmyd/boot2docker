@@ -55,6 +55,24 @@ RUN git clone -b "$AUFS_BRANCH" "$AUFS_REPO" /aufs-standalone && \
         patch -p1 < "$patch"; \
     done
 
+## Add SCST module
+ENV SCST_REPO       https://github.com/bvanassche/scst
+ENV SCST_BRANCH     svn-trunk
+ENV SCST_COMMIT     73f84f575587f6cf869660a9ca6cf96080bb0840
+
+RUN set -eux; \
+	apt-get update; \
+	apt-get -y install \
+		gawk \
+	; \
+	rm -rf /var/lib/apt/lists/*
+
+RUN git clone -b "$SCST_BRANCH" "$SCST_REPO" /scst && \
+    cd /scst && \
+    scripts/generate-kernel-patch "$KERNEL_VERSION" > ../scst.patch && \
+    cd ../linux-kernel && \
+    patch -Np1 < ../scst.patch
+
 COPY kernel_config /linux-kernel/.config
 
 RUN jobs=$(nproc); \
