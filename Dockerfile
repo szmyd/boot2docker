@@ -55,6 +55,28 @@ RUN git clone -b "$AUFS_BRANCH" "$AUFS_REPO" /aufs-standalone && \
         patch -p1 < "$patch"; \
     done
 
+## Clone and build SCST progs and patch the kernel
+RUN set -eux; \
+	apt-get update; \
+	apt-get -y install \
+		gawk \
+                vim-tiny \
+	; \
+	rm -rf /var/lib/apt/lists/*
+
+ENV SCST_REPO       https://github.com/bvanassche/scst
+ENV SCST_BRANCH     svn-3.2.x
+ENV SCST_COMMIT     34cca9e4
+RUN set -eux; \
+    git clone -b "$SCST_BRANCH" "$SCST_REPO" /scst; \
+    cd /scst; \
+    git checkout "$SCST_COMMIT"
+    scripts/generate-kernel-patch "$KERNEL_VERSION" > ../scst.patch; \
+    make -C scst/src; \
+    make -C iscsi-scst progs; \
+    cd ../linux-kernel; \
+    patch -Np1 < ../scst.patch
+
 COPY kernel_config /linux-kernel/.config
 
 RUN jobs=$(nproc); \
@@ -102,7 +124,7 @@ RUN curl -fL http://http.debian.net/debian/pool/main/libc/libcap2/libcap2_2.22.o
     cp -av `pwd`/output/lib64/* $ROOTFS/usr/local/lib
 
 # Make sure the kernel headers are installed for aufs-util, and then build it
-ENV AUFS_UTIL_REPO    git://git.code.sf.net/p/aufs/aufs-util
+ENV AUFS_UTIL_REPO    https://git.code.sf.net/p/aufs/aufs-util
 ENV AUFS_UTIL_BRANCH  aufs4.4
 ENV AUFS_UTIL_COMMIT  9702d49c9d1b5daac9b21e440c3e2b96d37916d6
 RUN set -ex \
@@ -343,8 +365,24 @@ COPY rootfs/rootfs $ROOTFS
 RUN ln -svT /usr/local/etc/acpi "$ROOTFS/etc/acpi" \
 	&& ln -svT /usr/local/sbin/ip "$ROOTFS/usr/sbin/ip"
 
+# Install Perl (required by SCST scripts)
+ENV PERL_SOURCE "http://www.cpan.org/src/5.0"
+ENV PERL_VERSION "5.26.1"
+RUN set -ex; \
+    curl -fSL -o "/tmp/perl-$PERL_VERSION.tar.gz" "$PERL_SOURCE/perl-$PERL_VERSION.tar.gz"; \
+    cd /tmp; \
+    tar -xzf "perl-$PERL_VERSION.tar.gz"; \
+    cd "perl-$PERL_VERSION"; \
+    ./Configure -des -Dprefix="/usr"; \
+    make; \
+    DESTDIR="$ROOTFS/" make install
+
 # These steps should only be run once, so can't be in make_iso.sh (which can be run in chained Dockerfiles)
 # see https://github.com/boot2docker/boot2docker/blob/master/doc/BUILD.md
+
+# Install the scstadmin scripts and iSCSI daemon
+RUN DESTDIR="$ROOTFS/" make -C /scst/scstadmin install && \
+    cp /scst/iscsi-scst/usr/iscsi-scstd "$ROOTFS/usr/sbin"
 
 # Make sure init scripts are executable
 RUN find "$ROOTFS/etc/rc.d/" "$ROOTFS/usr/local/etc/init.d/" -type f -exec chmod --changes +x '{}' +

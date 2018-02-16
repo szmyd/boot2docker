@@ -93,3 +93,6 @@ fi
 
 # Load Parallels Tools daemon
 /etc/rc.d/prltoolsd
+
+# Start the SCST service
+/etc/init.d/scst start
