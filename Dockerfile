@@ -67,15 +67,17 @@ RUN set -eux; \
 ENV SCST_REPO       https://github.com/bvanassche/scst
 ENV SCST_BRANCH     svn-3.2.x
 ENV SCST_COMMIT     34cca9e4
+COPY scst_patch /tmp/scst.patch
 RUN set -eux; \
     git clone -b "$SCST_BRANCH" "$SCST_REPO" /scst; \
     cd /scst; \
-    git checkout "$SCST_COMMIT"
-    scripts/generate-kernel-patch "$KERNEL_VERSION" > ../scst.patch; \
+    git checkout "$SCST_COMMIT"; \
+    patch -Np1 < /tmp/scst.patch; \
     make -C scst/src; \
     make -C iscsi-scst progs; \
+    scripts/generate-kernel-patch "$KERNEL_VERSION" > ../kernel.patch; \
     cd ../linux-kernel; \
-    patch -Np1 < ../scst.patch
+    patch -Np1 < ../kernel.patch
 
 COPY kernel_config /linux-kernel/.config
 
