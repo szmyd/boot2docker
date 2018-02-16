@@ -65,15 +65,16 @@ RUN set -eux; \
 	rm -rf /var/lib/apt/lists/*
 
 ENV SCST_REPO       https://github.com/bvanassche/scst
-ENV SCST_BRANCH     master
-ENV SCST_COMMIT     73f84f575587f6cf869660a9ca6cf96080bb0840
-RUN git clone -b "$SCST_BRANCH" "$SCST_REPO" /scst && \
-    cd /scst && \
-    git checkout "$SCST_COMMIT" && \
-    scripts/generate-kernel-patch "$KERNEL_VERSION" > ../scst.patch && \
-    make -C scst/src && \
-    make -C iscsi-scst progs && \
-    cd ../linux-kernel && \
+ENV SCST_BRANCH     svn-3.2.x
+ENV SCST_COMMIT     34cca9e4
+RUN set -eux; \
+    git clone -b "$SCST_BRANCH" "$SCST_REPO" /scst; \
+    cd /scst; \
+    git checkout "$SCST_COMMIT"
+    scripts/generate-kernel-patch "$KERNEL_VERSION" > ../scst.patch; \
+    make -C scst/src; \
+    make -C iscsi-scst progs; \
+    cd ../linux-kernel; \
     patch -Np1 < ../scst.patch
 
 COPY kernel_config /linux-kernel/.config
@@ -123,7 +124,7 @@ RUN curl -fL http://http.debian.net/debian/pool/main/libc/libcap2/libcap2_2.22.o
     cp -av `pwd`/output/lib64/* $ROOTFS/usr/local/lib
 
 # Make sure the kernel headers are installed for aufs-util, and then build it
-ENV AUFS_UTIL_REPO    git://git.code.sf.net/p/aufs/aufs-util
+ENV AUFS_UTIL_REPO    https://git.code.sf.net/p/aufs/aufs-util
 ENV AUFS_UTIL_BRANCH  aufs4.4
 ENV AUFS_UTIL_COMMIT  9702d49c9d1b5daac9b21e440c3e2b96d37916d6
 RUN set -ex \
