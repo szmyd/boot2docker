@@ -3,7 +3,7 @@
 Boot2SDS is a lightweight Linux distribution forked from
 [Boot2Docker](https://github.com/boot2docker/boot2docker) made specifically to
 run [Docker](https://www.docker.com/) containers with SCST kernel support. It
-runs completely from RAM, is a small ~54MB download and boots in ~10s.
+runs completely from RAM, is a small ~57MB download and boots in ~10s.
 
 ## Features
 
