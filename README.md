@@ -7,7 +7,7 @@ runs completely from RAM, is a small ~57MB download and boots in ~10s.
 
 ## Features
 
-* Kernel 4.4.115 with AUFS and SCST, Docker v18.02.0-ce - using libcontainer
+* Kernel 4.4.116 with AUFS and SCST, Docker v18.02.0-ce - using libcontainer
 * Container persistence via disk automount on `/var/lib/docker`
 * SSH keys persistence via disk automount
 
