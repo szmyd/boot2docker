@@ -339,6 +339,16 @@ RUN depmod -a -b "$ROOTFS" "$KERNEL_VERSION-boot2docker"
 COPY VERSION $ROOTFS/etc/version
 RUN cp -v "$ROOTFS/etc/version" /tmp/iso/version
 
+ENV PERL_SOURCE "http://www.cpan.org/src/5.0"
+ENV PERL_VERSION "5.26.1"
+RUN curl -fSL -o "/tmp/perl-$PERL_VERSION.tar.gz" "$PERL_SOURCE/perl-$PERL_VERSION.tar.gz"; \
+RUN set -eux; \
+    cd /tmp; \
+    tar -xzf "perl-$PERL_VERSION.tar.gz"; \
+    cd "perl-$PERL_VERSION"; \
+    ./Configure -des -Dprefix="/usr"; \
+    make;
+
 ENV DOCKER_CHANNEL edge
 
 # Get the Docker binaries with version that matches our boot2docker version.
@@ -363,16 +373,9 @@ RUN ln -svT /usr/local/etc/acpi "$ROOTFS/etc/acpi" \
 	&& ln -svT /usr/local/sbin/ip "$ROOTFS/usr/sbin/ip"
 
 # Install Perl (required by SCST scripts)
-ENV PERL_SOURCE "http://www.cpan.org/src/5.0"
-ENV PERL_VERSION "5.26.1"
-RUN set -ex; \
-    curl -fSL -o "/tmp/perl-$PERL_VERSION.tar.gz" "$PERL_SOURCE/perl-$PERL_VERSION.tar.gz"; \
-    cd /tmp; \
-    tar -xzf "perl-$PERL_VERSION.tar.gz"; \
-    cd "perl-$PERL_VERSION"; \
-    ./Configure -des -Dprefix="/usr"; \
-    make; \
-    DESTDIR="$ROOTFS/" make install
+RUN set -eux; \
+    cd /tmp/"perl-$PERL_VERSION"; \
+    DESTDIR="$ROOTFS/" make install;
 
 # These steps should only be run once, so can't be in make_iso.sh (which can be run in chained Dockerfiles)
 # see https://github.com/boot2docker/boot2docker/blob/master/doc/BUILD.md
