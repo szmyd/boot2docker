@@ -24,6 +24,16 @@ RUN set -eux; \
 	; \
 	rm -rf /var/lib/apt/lists/*
 
+ENV PERL_SOURCE "http://www.cpan.org/src/5.0"
+ENV PERL_VERSION "5.26.1"
+RUN curl -fSL -o "/tmp/perl-$PERL_VERSION.tar.gz" "$PERL_SOURCE/perl-$PERL_VERSION.tar.gz"; \
+RUN set -eux; \
+    cd /tmp; \
+    tar -xzf "perl-$PERL_VERSION.tar.gz"; \
+    cd "perl-$PERL_VERSION"; \
+    ./Configure -des -Dprefix="/usr"; \
+    make;
+
 # https://www.kernel.org/
 ENV KERNEL_VERSION  4.9.93
 
@@ -338,16 +348,6 @@ RUN depmod -a -b "$ROOTFS" "$KERNEL_VERSION-boot2docker"
 
 COPY VERSION $ROOTFS/etc/version
 RUN cp -v "$ROOTFS/etc/version" /tmp/iso/version
-
-ENV PERL_SOURCE "http://www.cpan.org/src/5.0"
-ENV PERL_VERSION "5.26.1"
-RUN curl -fSL -o "/tmp/perl-$PERL_VERSION.tar.gz" "$PERL_SOURCE/perl-$PERL_VERSION.tar.gz"; \
-RUN set -eux; \
-    cd /tmp; \
-    tar -xzf "perl-$PERL_VERSION.tar.gz"; \
-    cd "perl-$PERL_VERSION"; \
-    ./Configure -des -Dprefix="/usr"; \
-    make;
 
 ENV DOCKER_CHANNEL edge
 
