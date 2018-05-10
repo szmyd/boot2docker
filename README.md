@@ -2,7 +2,7 @@
 
 Boot2Docker is a lightweight Linux distribution made specifically to run
 [Docker](https://www.docker.com/) containers. It runs completely from RAM, is a
-~45MB download and boots quickly.
+~56MB download and boots quickly.
 
 ## Important Note
 
@@ -10,7 +10,7 @@ Boot2Docker is officialy in **maintenance mode** -- it is recommended that users
 
 ## Features
 
-* Kernel 4.9.93 (with AUFS), Docker v18.05.0-ce-rc1
+* Kernel 4.9.93 (with AUFS), Docker v18.05.0-ce
 * VM guest additions (VirtualBox, Parallels, VMware, XenServer)
 * SCST 3.2.x service
 * Container persistence via disk automount on `/var/lib/docker`
