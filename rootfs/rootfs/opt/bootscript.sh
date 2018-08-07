@@ -51,6 +51,8 @@ fi
 # Automount Shared Folders (VirtualBox, etc.); start VBox services
 /etc/rc.d/vbox
 
+/etc/rc.d/iscsi
+
 # Configure SSHD
 /etc/rc.d/sshd
 
